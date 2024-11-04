@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiaVideos Streaming</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        /* Estilos para los checkboxes alineados a la derecha */
+        .checkbox-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>LiaVideos Streaming</h2>
+
+        <div class="form-group">
+            <label><strong>Datos</strong></label>
+            <!-- Checkboxes alineados a la derecha -->
+            <div class="checkbox-group">
+                <label for="p1">P1</label>
+                <input type="checkbox" id="p1" name="punto" value="P1" onclick="seleccionarUnico(this)">
+                
+                <label for="p2">P2</label>
+                <input type="checkbox" id="p2" name="punto" value="P2" onclick="seleccionarUnico(this)">
+                
+                <label for="p3">P3</label>
+                <input type="checkbox" id="p3" name="punto" value="P3" onclick="seleccionarUnico(this)">
+                
+                <label for="p4">P4</label>
+                <input type="checkbox" id="p4" name="punto" value="P4" onclick="seleccionarUnico(this)">
+            </div>
+            
+            <div>
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div>
+                <label for="cargo">Cargo</label>
+                <input type="text" id="cargo" name="cargo" required>
+            </div>
+            <div>
+                <label for="red_social">Red Social</label>
+                <input type="text" id="red_social" name="red_social" required>
+            </div>
+            <div>
+                <label for="ubicacion">Ubicación</label>
+                <input type="text" id="ubicacion" name="ubicacion" required>
+            </div>
+            <div>
+                <label for="tema">Tema</label>
+                <input type="text" id="tema" name="tema" maxlength="64" required>
+            </div>
+            <div>
+                <label for="foto">Foto</label>
+                <input type="file" id="foto" name="foto" accept="image/jpeg" required>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="enviarDatos()">Enviar</button>
+            <button onclick="window.location.href='editar.html'">Editar</button>
+            <button onclick="window.location.href='titulares.html'">Titulares</button>
+            <button onclick="window.location.href='whatsapp.html'">WhatsApp</button>
+        </div>
+    </div>
+
+<script>
+    // Función para permitir solo una selección de checkbox a la vez
+    function seleccionarUnico(checkbox) {
+        const checkboxes = document.querySelectorAll('input[name="punto"]');
+        checkboxes.forEach((item) => {
+            if (item !== checkbox) item.checked = false;
+        });
+    }
+
+    // Nueva función para enviar solo el valor del checkbox seleccionado
+    async function enviarCheckbox() {
+        const punto = document.querySelector('input[name="punto"]:checked')?.value || "";
+        
+        if (!punto) {
+            alert("Por favor, selecciona un checkbox antes de enviar.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('punto', punto);
+
+        try {
+            const response = await fetch('http://localhost:3000/api/guardar_checkbox', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Checkbox guardado correctamente');
+            } else {
+                alert('Error al guardar el checkbox');
+            }
+        } catch (error) {
+            console.error('Error al enviar checkbox:', error);
+            alert('Hubo un problema al enviar el checkbox.');
+        }
+    }
+</script>
+
+
+
+
+
+    <script>
+        // Función para permitir solo una selección de checkbox a la vez
+        function seleccionarUnico(checkbox) {
+            const checkboxes = document.querySelectorAll('input[name="punto"]');
+            checkboxes.forEach((item) => {
+                if (item !== checkbox) item.checked = false;
+            });
+        }
+
+        // Validación y envío de datos al servidor
+        async function enviarDatos() {
+            const nombre = document.getElementById('nombre').value;
+            const cargo = document.getElementById('cargo').value;
+            const redSocial = document.getElementById('red_social').value;
+            const ubicacion = document.getElementById('ubicacion').value;
+            const tema = document.getElementById('tema').value;
+            const foto = document.getElementById('foto').files[0];
+            const punto = document.querySelector('input[name="punto"]:checked')?.value || "";
+
+            // Verificar que todos los campos estén completos, incluyendo el checkbox
+            if (!nombre || !cargo || !redSocial || !ubicacion || !tema || !punto) {
+                alert("Todos los campos, incluyendo un checkbox de 'Punto', son obligatorios.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            formData.append('cargo', cargo);
+            formData.append('red_social', redSocial);
+            formData.append('ubicacion', ubicacion);
+            formData.append('tema', tema);
+            formData.append('punto', punto);
+
+            if (foto) {
+                formData.append('foto', foto);
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/guardar', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Datos guardados correctamente');
+                    document.getElementById('nombre').value = '';
+                    document.getElementById('cargo').value = '';
+                    document.getElementById('red_social').value = '';
+                    document.getElementById('ubicacion').value = '';
+                    document.getElementById('tema').value = '';
+                    document.getElementById('foto').value = '';
+                    document.querySelectorAll('input[name="punto"]').forEach(cb => cb.checked = false);
+                } else {
+                    alert('Error al guardar los datos');
+                }
+            } catch (error) {
+                console.error('Error al enviar datos:', error);
+                alert('Hubo un problema al enviar los datos.');
+            }
+        }
+    </script>
+</body>
+</html>

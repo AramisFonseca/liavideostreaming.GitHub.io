@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Datos</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Editar Datos</h2>
+        <div class="form-group">
+            <label><strong>Datos</strong></label>
+            <div>
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div>
+                <label for="cargo">Cargo</label>
+                <input type="text" id="cargo" name="cargo" required>
+            </div>
+            <div>
+                <label for="red_social">Red Social</label>
+                <input type="text" id="red_social" name="red_social" required>
+            </div>
+            <div>
+                <label for="ubicacion">Ubicación</label>
+                <input type="text" id="ubicacion" name="ubicacion" required>
+            </div>
+            <div>
+                <label for="tema">Tema</label>
+                <input type="text" id="tema" name="tema" maxlength="64" required>
+            </div>
+            <div>
+                <label for="foto">Foto (opcional)</label>
+                <input type="file" id="foto" name="foto" accept="image/jpeg">
+            </div>
+        </div>
+        <div>
+            <button id="anterior" onclick="moverRegistro(-1)">Anterior</button>
+            <button id="siguiente" onclick="moverRegistro(1)">Siguiente</button>
+            <button onclick="actualizarRegistro()">Actualizar</button>
+            <button onclick="window.location.href='index.html'">Regresar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let datos = [];
+        let indiceActual = 0;
+
+        window.onload = async function() {
+            try {
+                const response = await fetch('http://localhost:3000/api/obtener-datos');
+                if (response.ok) {
+                    datos = await response.json();
+                    mostrarRegistro();
+                } else {
+                    alert('Error al cargar los datos');
+                }
+            } catch (error) {
+                console.error('Error al cargar los datos:', error);
+            }
+        };
+
+        function mostrarRegistro() {
+            if (datos.length > 0) {
+                const registro = datos[indiceActual];
+                document.getElementById('nombre').value = registro[0] || '';
+                document.getElementById('cargo').value = registro[1] || '';
+                document.getElementById('red_social').value = registro[2] || '';
+                document.getElementById('ubicacion').value = registro[3] || '';
+                document.getElementById('tema').value = registro[4] || '';
+            }
+            document.getElementById('anterior').disabled = indiceActual === 0;
+            document.getElementById('siguiente').disabled = indiceActual === datos.length - 1;
+        }
+
+        function moverRegistro(direccion) {
+            indiceActual = Math.max(0, Math.min(datos.length - 1, indiceActual + direccion));
+            mostrarRegistro();
+        }
+
+        async function actualizarRegistro() {
+            const nombre = document.getElementById('nombre').value;
+            const cargo = document.getElementById('cargo').value;
+            const red_social = document.getElementById('red_social').value;
+            const ubicacion = document.getElementById('ubicacion').value;
+            const tema = document.getElementById('tema').value;
+            const id = indiceActual + 1; // Ajuste para comenzar desde la fila 1
+
+            const data = {
+                id,
+                nombre,
+                cargo,
+                red_social,
+                ubicacion,
+                tema,
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/actualizar-datos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Registro actualizado correctamente');
+                } else {
+                    alert('Error al actualizar el registro');
+                }
+            } catch (error) {
+                console.error('Error al actualizar el registro:', error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiaVideos Streaming - Editar Titulares</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>LiaVideos Streaming</h2>
+        <div class="form-group">
+            <label><strong>Editar Titulares</strong></label>
+            <div>
+                <label for="titulo">Título</label>
+                <!-- Campo de texto con límite de 100 caracteres -->
+                <input type="text" id="titulo" name="titulo" maxlength="100" required>
+            </div>
+        </div>
+        <div>
+            <button id="anterior" onclick="anteriorTitulo()">Anterior</button>
+            <button id="siguiente" onclick="siguienteTitulo()">Siguiente</button>
+            <button onclick="actualizarTitulo()">Actualizar</button>
+            <!-- Botón Regresar modificado para redirigir a titulares.html -->
+            <button onclick="window.location.href='titulares.html'">Regresar</button>
+        </div>
+    </div>
+
+    <script>
+        let titulares = [];
+        let currentIndex = 0;
+
+        // Función para cargar los titulares desde el servidor
+        async function cargarTitulares() {
+            try {
+                const response = await fetch('http://localhost:3000/api/obtener-titulares');
+                if (!response.ok) {
+                    throw new Error('Error al obtener titulares');
+                }
+                titulares = await response.json();
+                if (titulares.length > 0) {
+                    mostrarTitulo(currentIndex);
+                } else {
+                    alert("No hay titulares disponibles para editar.");
+                }
+                actualizarBotones();
+            } catch (error) {
+                console.error('Error al cargar titulares:', error);
+                alert("Hubo un problema al cargar los titulares.");
+            }
+        }
+
+        // Función para mostrar el titular actual en el campo de texto
+        function mostrarTitulo(index) {
+            document.getElementById('titulo').value = titulares[index] || '';
+            actualizarBotones();
+        }
+
+        // Función para actualizar el estado de los botones Anterior y Siguiente
+        function actualizarBotones() {
+            document.getElementById('anterior').disabled = (currentIndex === 0);
+            document.getElementById('siguiente').disabled = (currentIndex === titulares.length - 1);
+        }
+
+        // Funciones de navegación
+        function anteriorTitulo() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                mostrarTitulo(currentIndex);
+            }
+        }
+
+        function siguienteTitulo() {
+            if (currentIndex < titulares.length - 1) {
+                currentIndex++;
+                mostrarTitulo(currentIndex);
+            }
+        }
+
+        // Función para actualizar el titular actual
+        async function actualizarTitulo() {
+            const titulo = document.getElementById('titulo').value;
+
+            if (titulo.length > 100) {
+                alert("El título no puede exceder los 100 caracteres.");
+                return;
+            }
+
+            const data = { id: currentIndex + 1, titulo }; // Ajusta el índice al ID de la hoja de Google Sheets
+
+            try {
+                const response = await fetch('http://localhost:3000/api/actualizar-titulares', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("Título actualizado correctamente.");
+                } else {
+                    alert("Error al actualizar el título.");
+                }
+            } catch (error) {
+                console.error('Error al actualizar el título:', error);
+                alert("Hubo un problema al actualizar el título.");
+            }
+        }
+
+        // Cargar los titulares al cargar la página
+        window.onload = cargarTitulares;
+    </script>
+</body>
+</html>

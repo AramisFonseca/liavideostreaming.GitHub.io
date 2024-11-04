@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiaVideos Streaming - WhatsApp</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>LiaVideos Streaming - WhatsApp</h2>
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label for="mensaje">Mensaje</label>
+            <textarea id="mensaje" name="mensaje" rows="4" maxlength="500" required></textarea>
+        </div>
+        <div>
+            <button onclick="enviarWhatsApp()">Enviar</button>
+            <!-- Aquí se añade el botón Editar para redirigir a editar_whatsapp.html -->
+            <button onclick="window.location.href='editar_whatsapp.html'">Editar</button>
+            <button onclick="window.location.href='index.html'">Regresar</button>
+        </div>
+    </div>
+
+    <script>
+        async function enviarWhatsApp() {
+            const nombre = document.getElementById('nombre').value;
+            const mensaje = document.getElementById('mensaje').value;
+
+            const data = { nombre, mensaje };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/guardar-whatsapp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("Mensaje guardado correctamente en la hoja de WhatsApp.");
+                    document.getElementById('nombre').value = '';
+                    document.getElementById('mensaje').value = '';
+                } else {
+                    alert("Error al guardar el mensaje.");
+                }
+            } catch (error) {
+                console.error('Error al enviar mensaje:', error);
+                alert("Hubo un problema al enviar el mensaje.");
+            }
+        }
+    </script>
+</body>
+</html>

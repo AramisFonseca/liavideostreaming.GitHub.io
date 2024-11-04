@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiaVideos Streaming - Titulares</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>LiaVideos Streaming</h2>
+        <div class="form-group">
+            <label><strong>Titulares</strong></label>
+            <div>
+                <label for="titulo">Título</label>
+                <!-- Limitar a 100 caracteres -->
+                <input type="text" id="titulo" name="titulo" maxlength="100" required>
+            </div>
+        </div>
+        <div>
+            <button onclick="enviarTitulares()">Enviar</button>
+            <!-- Modificado: Botón Editar que redirige a editar_titulares.html -->
+            <button onclick="window.location.href='editar_titulares.html'">Editar</button>
+            <button onclick="window.location.href='index.html'">Regresar</button>
+        </div>
+    </div>
+
+    <script>
+        async function enviarTitulares() {
+            const titulo = document.getElementById('titulo').value;
+
+            if (titulo.length > 100) {
+                alert("El título no puede exceder los 100 caracteres.");
+                return;
+            }
+
+            const data = { titulo };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/guardar-titulares', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("Título guardado correctamente en la hoja de Google Sheets.");
+                    document.getElementById('titulo').value = ''; // Limpiar el campo
+                } else {
+                    alert("Error al guardar el título.");
+                }
+            } catch (error) {
+                console.error('Error al enviar el título:', error);
+                alert("Hubo un problema al enviar el título.");
+            }
+        }
+    </script>
+</body>
+</html>

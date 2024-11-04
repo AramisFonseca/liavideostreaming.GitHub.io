@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiaVideos Streaming - Editar WhatsApp</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>LiaVideos Streaming - Editar WhatsApp</h2>
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label for="mensaje">Mensaje</label>
+            <textarea id="mensaje" name="mensaje" rows="4" maxlength="500" required></textarea>
+        </div>
+        <div>
+            <button id="anterior" onclick="anteriorMensaje()">Anterior</button>
+            <button id="siguiente" onclick="siguienteMensaje()">Siguiente</button>
+            <button onclick="actualizarMensaje()">Actualizar</button>
+            <button onclick="window.location.href='whatsapp.html'">Regresar</button>
+        </div>
+    </div>
+
+    <script>
+        let mensajes = [];
+        let currentIndex = 0;
+
+        // Función para cargar los mensajes desde el servidor
+        async function cargarMensajes() {
+            try {
+                const response = await fetch('http://localhost:3000/api/obtener-whatsapp');
+                if (!response.ok) {
+                    throw new Error('Error al obtener los mensajes');
+                }
+                mensajes = await response.json();
+                if (mensajes.length > 0) {
+                    mostrarMensaje(currentIndex);
+                } else {
+                    alert("No hay mensajes disponibles para editar.");
+                }
+                actualizarBotones();
+            } catch (error) {
+                console.error('Error al cargar mensajes:', error);
+                alert("Hubo un problema al cargar los mensajes.");
+            }
+        }
+
+        // Función para mostrar el mensaje actual en los campos de texto
+        function mostrarMensaje(index) {
+            document.getElementById('nombre').value = mensajes[index]?.nombre || '';
+            document.getElementById('mensaje').value = mensajes[index]?.mensaje || '';
+            actualizarBotones();
+        }
+
+        // Función para actualizar el estado de los botones Anterior y Siguiente
+        function actualizarBotones() {
+            document.getElementById('anterior').disabled = (currentIndex === 0);
+            document.getElementById('siguiente').disabled = (currentIndex === mensajes.length - 1);
+        }
+
+        // Funciones de navegación
+        function anteriorMensaje() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                mostrarMensaje(currentIndex);
+            }
+        }
+
+        function siguienteMensaje() {
+            if (currentIndex < mensajes.length - 1) {
+                currentIndex++;
+                mostrarMensaje(currentIndex);
+            }
+        }
+
+        // Función para actualizar el mensaje actual
+        async function actualizarMensaje() {
+            const nombre = document.getElementById('nombre').value;
+            const mensaje = document.getElementById('mensaje').value;
+
+            const data = { id: currentIndex + 1, nombre, mensaje }; // Ajusta el índice al ID de la hoja de Google Sheets
+
+            try {
+                const response = await fetch('http://localhost:3000/api/actualizar-whatsapp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("Mensaje actualizado correctamente.");
+                } else {
+                    alert("Error al actualizar el mensaje.");
+                }
+            } catch (error) {
+                console.error('Error al actualizar el mensaje:', error);
+                alert("Hubo un problema al actualizar el mensaje.");
+            }
+        }
+
+        // Cargar los mensajes al cargar la página
+        window.onload = cargarMensajes;
+    </script>
+</body>
+</html>
